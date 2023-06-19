@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+}
+
+group 'org.kibo'
+version '1.0.2'
+
+sourceCompatibility = 1.8
+
+repositories {
+    maven {
+        url "http://10.100.16.29:17902/repository/maven-all/"
+        allowInsecureProtocol = true
+        credentials {
+            username 'admin'
+            password 'kibo12!@'
+        }
+
+    }
+}
+
+sourceSets {
+    test {
+        java {
+            srcDir 'src/test'
+        }
+        resources {
+            srcDir 'src/test/resources'
+        }
+    }
+}
+
+
+test {
+    useJUnitPlatform()
+}
+dependencies {
+    implementation 'org.hibernate:hibernate-core:5.0.12.Final' // For Hibernate 5, compatible with Spring 4.3.16
+    compileOnly 'org.projectlombok:lombok:1.18.10'
+
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+    testCompileOnly 'org.projectlombok:lombok:1.18.10'
+
+
+}
+
