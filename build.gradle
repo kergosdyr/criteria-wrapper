@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'org.kibo'
-version '1.0.2'
+version '1.0.4'
 
 sourceCompatibility = 1.8
 
@@ -34,6 +34,8 @@ sourceSets {
 test {
     useJUnitPlatform()
 }
+
+
 dependencies {
     implementation 'org.hibernate:hibernate-core:5.0.12.Final' // For Hibernate 5, compatible with Spring 4.3.16
     compileOnly 'org.projectlombok:lombok:1.18.10'

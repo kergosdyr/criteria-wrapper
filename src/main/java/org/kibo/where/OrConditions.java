@@ -1,6 +1,7 @@
 package org.kibo.where;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.From;
 import javax.persistence.criteria.Predicate;
 import java.util.Arrays;
@@ -19,10 +20,10 @@ public class OrConditions implements WhereCondition {
 
 
     @Override
-    public Predicate toPredicate(From<?, ?> root, CriteriaBuilder criteriaBuilder) {
+    public Predicate toPredicate(From<?, ?> root, CriteriaBuilder criteriaBuilder, CriteriaQuery criteriaQuery) {
         return criteriaBuilder.or(
                 conditions.stream()
-                        .map(condition -> condition.toPredicate(root, criteriaBuilder))
+                        .map(condition -> condition.toPredicate(root, criteriaBuilder, criteriaQuery))
                         .toArray(Predicate[]::new)
         );
     }
