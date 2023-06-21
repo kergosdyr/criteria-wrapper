@@ -3,20 +3,12 @@ plugins {
 }
 
 group 'org.kibo'
-version '1.0.4'
+version '0.0.8'
 
 sourceCompatibility = 1.8
 
 repositories {
-    maven {
-        url "http://10.100.16.29:17902/repository/maven-all/"
-        allowInsecureProtocol = true
-        credentials {
-            username 'admin'
-            password 'kibo12!@'
-        }
-
-    }
+    mavenCentral()
 }
 
 sourceSets {

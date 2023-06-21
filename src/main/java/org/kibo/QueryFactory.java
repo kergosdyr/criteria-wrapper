@@ -11,23 +11,29 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
-import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import javax.persistence.criteria.Selection;
-import org.kibo.aggregation.Aggregation;
 import org.kibo.where.WhereCondition;
 
 @SuppressWarnings("rawtypes")
 public class QueryFactory<T> {
 
     private final EntityManager entityManager;
-    private final CriteriaBuilder criteriaBuilder;
-    private CriteriaQuery criteriaQuery;
+    private final CriteriaBuilder cb;
+    private CriteriaQuery cq;
     private final Root<T> root;
+
+    private List<Predicate> andPredicates = new ArrayList<>();
+
+    private List<Predicate> orPredicates = new ArrayList<>();
+
+    private List<Predicate> innerJoinPredicate = new ArrayList<>();
+
+    private List<Predicate> crossJoinPredicate = new ArrayList<>();
 
     private int offset = 0;
     private int limit = Integer.MAX_VALUE;
@@ -37,10 +43,11 @@ public class QueryFactory<T> {
         Class<T> clazz
     ) {
         this.entityManager = em;
-        this.criteriaBuilder = em.getCriteriaBuilder();
-        this.criteriaQuery = criteriaBuilder.createQuery(clazz);
-        this.root = criteriaQuery.from(clazz);
+        this.cb = em.getCriteriaBuilder();
+        this.cq = cb.createQuery(clazz);
+        this.root = cq.from(clazz);
     }
+
     <R> QueryFactory(
         EntityManager em,
         CriteriaBuilder cb,
@@ -49,8 +56,8 @@ public class QueryFactory<T> {
         Class<T> clazz
     ) {
         this.entityManager = em;
-        this.criteriaBuilder = cb;
-        this.criteriaQuery = cq;
+        this.cb = cb;
+        this.cq = cq;
         this.root = root;
     }
 
@@ -60,9 +67,9 @@ public class QueryFactory<T> {
         Class<R> projectionClass
     ) {
         this.entityManager = em;
-        this.criteriaBuilder = em.getCriteriaBuilder();
-        this.criteriaQuery = criteriaBuilder.createQuery(projectionClass);
-        this.root = criteriaQuery.from(clazz);
+        this.cb = em.getCriteriaBuilder();
+        this.cq = cb.createQuery(projectionClass);
+        this.root = cq.from(clazz);
     }
 
     public static QueryFactoryBuilder db(EntityManager entityManager) {
@@ -74,14 +81,14 @@ public class QueryFactory<T> {
         Root<T> root
     ) {
         this.entityManager = queryFactory.entityManager;
-        this.criteriaBuilder = queryFactory.criteriaBuilder;
-        this.criteriaQuery = queryFactory.criteriaQuery;
+        this.cb = queryFactory.cb;
+        this.cq = queryFactory.cq;
         this.root = root;
     }
 
     public QueryFactory<T> select(Class<T> clazz) {
-        criteriaQuery = criteriaBuilder.createQuery(clazz);
-        criteriaQuery.select(criteriaQuery.from(clazz));
+        cq = cb.createQuery(clazz);
+        cq.select(cq.from(clazz));
         return this;
     }
 
@@ -90,15 +97,15 @@ public class QueryFactory<T> {
         List<Selector> selectors
     ) {
 
-        criteriaQuery = criteriaQuery.select(criteriaBuilder.construct(
+        cq = cq.select(cb.construct(
             projectionClass,
             selectors.stream()
-                .map(selector -> selector.toSelection(this.criteriaBuilder, this.root))
+                .map(selector -> selector.toSelection(this.cb, this.root))
                 .toArray(Selection[]::new)
         ));
 
         return new QueryFactory<R>(
-            this.entityManager, this.criteriaBuilder, this.criteriaQuery, this.root,
+            this.entityManager, this.cb, this.cq, this.root,
             projectionClass
         );
 
@@ -110,20 +117,26 @@ public class QueryFactory<T> {
     }
 
     public QueryFactory<T> where(WhereCondition... condition) {
-        criteriaQuery.where(
-            criteriaBuilder.and(getPredicateFromCondition(root, Arrays.asList(condition))));
+        andPredicates.addAll(
+            Arrays.asList(getPredicateFromCondition(root, Arrays.asList(condition)))
+        );
         return this;
     }
 
     public QueryFactory<T> whereAnd(WhereCondition... condition) {
-        criteriaQuery.where(
-            criteriaBuilder.and(getPredicateFromCondition(root, Arrays.asList(condition))));
+
+        andPredicates.addAll(
+            Arrays.asList(getPredicateFromCondition(root, Arrays.asList(condition))
+            ));
         return this;
     }
 
     public QueryFactory<T> whereOr(WhereCondition... condition) {
-        criteriaQuery.where(
-            criteriaBuilder.or(getPredicateFromCondition(root, Arrays.asList(condition))));
+
+        orPredicates.addAll(
+            Arrays.asList(getPredicateFromCondition(root, Arrays.asList(condition)))
+        );
+
         return this;
     }
 
@@ -131,10 +144,14 @@ public class QueryFactory<T> {
         Column column,
         OnConditions onConditions
     ) {
-        Join<?, ?> join = root.join(column.getFieldName(), JoinType.INNER);
         List<WhereCondition> conditions = onConditions.getConditions();
-        criteriaQuery.where(criteriaBuilder.and(getPredicateFromCondition(join, conditions)));
+        innerJoinPredicate.addAll(Arrays.asList(getPredicateFromCondition(
+            root.join(column.getFieldName(), JoinType.INNER), conditions)));
         return this;
+    }
+
+    private boolean isThisColumnSameAsRoot(Column column) {
+        return column.getEntityClass() == null || column.getEntityClass() == root.getJavaType();
     }
 
     private Predicate[] getPredicateFromCondition(
@@ -142,8 +159,8 @@ public class QueryFactory<T> {
         List<WhereCondition> conditions
     ) {
         return conditions.stream().map(condition -> condition != null
-            ? condition.toPredicate(from, criteriaBuilder, criteriaQuery)
-            : criteriaBuilder.conjunction()).toArray(Predicate[]::new
+            ? condition.toPredicate(from, cb, cq)
+            : cb.conjunction()).toArray(Predicate[]::new
         );
     }
 
@@ -162,15 +179,17 @@ public class QueryFactory<T> {
         OnConditions onConditions
     ) {
 
-        criteriaQuery.where(criteriaBuilder.and(onConditions.getConditions()
-            .stream()
-            .map(condition -> condition.toPredicate(root, criteriaBuilder, criteriaQuery))
-            .toArray(Predicate[]::new)));
+        crossJoinPredicate.addAll(
+            onConditions.getConditions().stream()
+                .map(condtion -> condtion.toPredicate(root, cb, cq))
+                .collect(Collectors.toList())
+        );
+
         return this;
     }
 
     public QueryFactory<T> having(WhereCondition condition) {
-        criteriaQuery.having(condition.toPredicate(root, criteriaBuilder, criteriaQuery));
+        cq.having(condition.toPredicate(root, cb, cq));
         return this;
     }
 
@@ -184,13 +203,27 @@ public class QueryFactory<T> {
     }
 
     public List<T> getResultList() {
-        return entityManager.createQuery(criteriaQuery).setFirstResult(offset).setMaxResults(limit)
+
+        cq.where(
+            innerJoinPredicate.isEmpty() ? cb.conjunction()
+                : cb.and(innerJoinPredicate.toArray(new Predicate[0])),
+            crossJoinPredicate.isEmpty() ? cb.conjunction()
+                : cb.and(crossJoinPredicate.toArray(new Predicate[0])),
+            andPredicates.isEmpty() ? cb.conjunction()
+                : cb.and(andPredicates.toArray(new Predicate[0])),
+            orPredicates.isEmpty() ? cb.conjunction()
+                : cb.or(orPredicates.toArray(new Predicate[0]))
+        );
+
+        return entityManager
+            .createQuery(cq)
+            .setFirstResult(offset)
+            .setMaxResults(limit)
             .getResultList();
     }
 
     public Optional<T> getResult() {
-        return entityManager.createQuery(criteriaQuery).setFirstResult(offset).getResultList()
-            .stream().findFirst();
+        return this.getResultList().stream().findFirst();
     }
 
     public QueryFactory<T> groupBy(Column... columns) {
@@ -198,7 +231,7 @@ public class QueryFactory<T> {
         for (Column column : columns) {
             groupByList.add(root.get(column.getFieldName()));
         }
-        criteriaQuery.groupBy(groupByList);
+        cq.groupBy(groupByList);
         return this;
     }
 
@@ -210,14 +243,14 @@ public class QueryFactory<T> {
         for (Column column : columns) {
             switch (direction) {
                 case ASC:
-                    orderList.add(criteriaBuilder.asc(root.get(column.getFieldName())));
+                    orderList.add(cb.asc(root.get(column.getFieldName())));
                     break;
                 case DESC:
-                    orderList.add(criteriaBuilder.desc(root.get(column.getFieldName())));
+                    orderList.add(cb.desc(root.get(column.getFieldName())));
                     break;
             }
         }
-        criteriaQuery.orderBy(orderList);
+        cq.orderBy(orderList);
         return this;
     }
 

@@ -1,5 +1,6 @@
 package org.kibo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -17,6 +18,11 @@ public class DeleteQueryFactory<T> {
     private CriteriaDelete<T> deleteCq;
     private Root<T> root;
 
+    private List<Predicate> andPredicates = new ArrayList<>();
+
+    private List<Predicate> orPredicates = new ArrayList<>();
+
+
     public DeleteQueryFactory(EntityManager em, Class<T> entityClass) {
         this.em = em;
         this.cb = em.getCriteriaBuilder();
@@ -26,20 +32,26 @@ public class DeleteQueryFactory<T> {
     }
 
     public DeleteQueryFactory<T> where(WhereCondition... condition) {
-        deleteCq.where(
-            cb.and(getPredicateFromCondition(root, Arrays.asList(condition))));
+        andPredicates.addAll(
+            Arrays.asList(getPredicateFromCondition(root, Arrays.asList(condition)))
+        );
         return this;
     }
 
     public DeleteQueryFactory<T> whereAnd(WhereCondition... condition) {
-        deleteCq.where(
-            cb.and(getPredicateFromCondition(root, Arrays.asList(condition))));
+
+        andPredicates.addAll(
+            Arrays.asList(getPredicateFromCondition(root, Arrays.asList(condition))
+            ));
         return this;
     }
 
     public DeleteQueryFactory<T> whereOr(WhereCondition... condition) {
-        deleteCq.where(
-            cb.or(getPredicateFromCondition(root, Arrays.asList(condition))));
+
+        orPredicates.addAll(
+            Arrays.asList(getPredicateFromCondition(root, Arrays.asList(condition)))
+        );
+
         return this;
     }
 
@@ -55,6 +67,13 @@ public class DeleteQueryFactory<T> {
 
 
     public int execute() {
+        deleteCq.where(
+            andPredicates.isEmpty() ? cb.conjunction()
+                : cb.and(andPredicates.toArray(new Predicate[0])),
+            orPredicates.isEmpty() ? cb.conjunction()
+                : cb.or(orPredicates.toArray(new Predicate[0]))
+        );
+
         return this.em.createQuery(this.deleteCq).executeUpdate();
     }
 }
