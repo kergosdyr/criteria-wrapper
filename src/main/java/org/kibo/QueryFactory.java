@@ -19,7 +19,7 @@ import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
 import org.kibo.where.WhereCondition;
 
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class QueryFactory<T> {
 
     private final EntityManager entityManager;
@@ -27,13 +27,13 @@ public class QueryFactory<T> {
     private CriteriaQuery cq;
     private final Root<T> root;
 
-    private List<Predicate> andPredicates = new ArrayList<>();
+    private final List<Predicate> andPredicates = new ArrayList<>();
 
-    private List<Predicate> orPredicates = new ArrayList<>();
+    private final List<Predicate> orPredicates = new ArrayList<>();
 
-    private List<Predicate> innerJoinPredicate = new ArrayList<>();
+    private final List<Predicate> innerJoinPredicate = new ArrayList<>();
 
-    private List<Predicate> crossJoinPredicate = new ArrayList<>();
+    private final List<Predicate> crossJoinPredicate = new ArrayList<>();
 
     private int offset = 0;
     private int limit = Integer.MAX_VALUE;

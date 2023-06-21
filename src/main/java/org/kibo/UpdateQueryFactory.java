@@ -15,13 +15,13 @@ public class UpdateQueryFactory<T> {
 
     private final EntityManager em;
     private final CriteriaBuilder cb;
-    private CriteriaUpdate<T> updateCq;
+    private final CriteriaUpdate<T> updateCq;
 
-    private List<Predicate> andPredicates = new ArrayList<>();
+    private final List<Predicate> andPredicates = new ArrayList<>();
 
-    private List<Predicate> orPredicates = new ArrayList<>();
+    private final List<Predicate> orPredicates = new ArrayList<>();
 
-    private Root<T> root;
+    private final Root<T> root;
 
     public UpdateQueryFactory(
         EntityManager em,

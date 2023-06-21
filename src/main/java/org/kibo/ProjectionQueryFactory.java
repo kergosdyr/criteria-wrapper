@@ -9,7 +9,7 @@ public class ProjectionQueryFactory<T> {
 
     private final EntityManager em;
 
-    private List<Selector> selectors;
+    private final List<Selector> selectors;
 
 
     private Class<T> projectionClass;

@@ -15,12 +15,12 @@ import org.kibo.where.WhereCondition;
 public class DeleteQueryFactory<T> {
     private final EntityManager em;
     private final CriteriaBuilder cb;
-    private CriteriaDelete<T> deleteCq;
-    private Root<T> root;
+    private final CriteriaDelete<T> deleteCq;
+    private final Root<T> root;
 
-    private List<Predicate> andPredicates = new ArrayList<>();
+    private final List<Predicate> andPredicates = new ArrayList<>();
 
-    private List<Predicate> orPredicates = new ArrayList<>();
+    private final List<Predicate> orPredicates = new ArrayList<>();
 
 
     public DeleteQueryFactory(EntityManager em, Class<T> entityClass) {
