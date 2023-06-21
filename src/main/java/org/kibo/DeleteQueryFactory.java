@@ -48,7 +48,7 @@ public class DeleteQueryFactory<T> {
         List<WhereCondition> conditions
     ) {
         return conditions.stream().map(condition -> condition != null
-            ? condition.toPredicate(from, cb, deleteCq)
+            ? condition.toPredicate(from, cb, null)
             : cb.conjunction()).toArray(Predicate[]::new
         );
     }

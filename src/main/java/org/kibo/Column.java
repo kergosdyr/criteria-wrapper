@@ -2,6 +2,7 @@ package org.kibo;
 
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
@@ -45,6 +46,7 @@ public class Column implements Selector {
 
     public OnCondition eq(Column column) {
         return (root, criteriaBuilder, criteriaQuery) -> {
+
 
             Result result = getRootPathResult(column, root, criteriaQuery);
 
