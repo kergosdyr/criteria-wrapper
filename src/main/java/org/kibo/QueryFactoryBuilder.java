@@ -17,10 +17,10 @@ public class QueryFactoryBuilder {
     public ProjectionQueryFactoryBuilder select(Selector... selectors) {
         return new ProjectionQueryFactoryBuilder(this.em, Arrays.asList(selectors));
     }
-    public <T> QueryFactory<T> update(Class<T> clazz) {
+    public <T> UpdateQueryFactory<T> update(Class<T> clazz) {
         return new UpdateQueryFactory<>(this.em, clazz);
     }
-    public <T> QueryFactory<T> delete(Class<T> clazz) {
+    public <T> DeleteQueryFactory<T> delete(Class<T> clazz) {
         return new DeleteQueryFactory<>(this.em, clazz);
     }
 

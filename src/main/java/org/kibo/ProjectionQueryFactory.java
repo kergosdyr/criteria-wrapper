@@ -21,6 +21,7 @@ public class ProjectionQueryFactory<T> {
         this.em = em;
         this.selectors = Arrays.asList(selectors);
     }
+
     ProjectionQueryFactory(
         EntityManager em,
         Class<T> projectionClass,
