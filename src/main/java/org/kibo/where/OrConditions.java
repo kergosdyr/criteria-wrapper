@@ -20,7 +20,7 @@ public class OrConditions implements WhereCondition {
 
 
     @Override
-    public Predicate toPredicate(From<?, ?> root, CriteriaBuilder criteriaBuilder, CriteriaQuery criteriaQuery) {
+    public Predicate toPredicate(From<?, ?> root, CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery) {
         return criteriaBuilder.or(
                 conditions.stream()
                         .map(condition -> condition.toPredicate(root, criteriaBuilder, criteriaQuery))

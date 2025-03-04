@@ -12,6 +12,14 @@ repositories {
 }
 
 sourceSets {
+    main {
+        java {
+            srcDir 'src/main'
+        }
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
     test {
         java {
             srcDir 'src/test'
@@ -23,6 +31,7 @@ sourceSets {
 }
 
 
+
 test {
     useJUnitPlatform()
 }
@@ -30,13 +39,20 @@ test {
 
 dependencies {
     implementation 'org.hibernate:hibernate-core:5.0.12.Final' // For Hibernate 5, compatible with Spring 4.3.16
+    implementation 'org.hibernate:hibernate-entitymanager:5.0.12.Final'
+
     compileOnly 'org.projectlombok:lombok:1.18.10'
+    annotationProcessor 'org.projectlombok:lombok:1.18.10'
 
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     testCompileOnly 'org.projectlombok:lombok:1.18.10'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.10'
+
+    testRuntimeOnly 'com.h2database:h2:2.2.220'
+
 
 
 }

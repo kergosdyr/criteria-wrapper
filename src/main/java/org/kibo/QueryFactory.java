@@ -11,6 +11,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.From;
+import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
@@ -140,13 +141,14 @@ public class QueryFactory<T> {
         return this;
     }
 
-    public QueryFactory<T> join(
-        Column column,
-        OnConditions onConditions
-    ) {
-        List<WhereCondition> conditions = onConditions.getConditions();
-        innerJoinPredicate.addAll(Arrays.asList(getPredicateFromCondition(
-            root.join(column.getFieldName(), JoinType.INNER), conditions)));
+    public QueryFactory<T> join(Column column, OnConditions onConditions) {
+
+        Join<Object, Object> join = root.join(column.getFieldName(), JoinType.INNER);
+
+        if (onConditions != null && !onConditions.getConditions().isEmpty()) {
+            Predicate[] predicates = getPredicateFromCondition(join, onConditions.getConditions());
+            join.on(predicates);
+        }
         return this;
     }
 
@@ -221,6 +223,27 @@ public class QueryFactory<T> {
             .setMaxResults(limit)
             .getResultList();
     }
+
+    public List<T> build() {
+
+        cq.where(
+            innerJoinPredicate.isEmpty() ? cb.conjunction()
+                : cb.and(innerJoinPredicate.toArray(new Predicate[0])),
+            crossJoinPredicate.isEmpty() ? cb.conjunction()
+                : cb.and(crossJoinPredicate.toArray(new Predicate[0])),
+            andPredicates.isEmpty() ? cb.conjunction()
+                : cb.and(andPredicates.toArray(new Predicate[0])),
+            orPredicates.isEmpty() ? cb.conjunction()
+                : cb.or(orPredicates.toArray(new Predicate[0]))
+        );
+
+        return entityManager
+            .createQuery(cq)
+            .setFirstResult(offset)
+            .setMaxResults(limit)
+            .getResultList();
+    }
+
 
     public Optional<T> getResult() {
         return this.getResultList().stream().findFirst();

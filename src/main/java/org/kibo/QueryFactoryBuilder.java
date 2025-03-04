@@ -11,6 +11,10 @@ public class QueryFactoryBuilder {
         this.em = entityManager;
     }
 
+    public static QueryFactoryBuilder create(EntityManager entityManager) {
+        return new QueryFactoryBuilder(entityManager);
+    }
+
     public <T> QueryFactory<T> select(Class<T> clazz) {
         return new QueryFactory<>(this.em, clazz);
     }

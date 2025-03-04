@@ -10,7 +10,7 @@ import org.kibo.where.WhereCondition;
 public interface OnCondition extends WhereCondition {
 
     @SuppressWarnings("rawtypes")
-    Predicate toPredicate(From<?, ?> root, CriteriaBuilder criteriaBuilder, CriteriaQuery criteriaQuery);
+    Predicate toPredicate(From<?, ?> root, CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery);
 
 
 }

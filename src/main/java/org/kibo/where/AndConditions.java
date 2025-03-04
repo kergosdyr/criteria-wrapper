@@ -19,7 +19,7 @@ public class AndConditions implements WhereCondition {
 
 
     @Override
-    public Predicate toPredicate(From<?, ?> root, CriteriaBuilder criteriaBuilder, CriteriaQuery criteriaQuery) {
+    public Predicate toPredicate(From<?, ?> root, CriteriaBuilder criteriaBuilder, CriteriaQuery<?> criteriaQuery) {
         return criteriaBuilder.and(
                 conditions.stream()
                         .map(condition -> condition.toPredicate(root, criteriaBuilder, criteriaQuery))
