@@ -30,6 +30,11 @@ sourceSets {
     }
 }
 
+processTestResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+
 
 
 test {
@@ -50,7 +55,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     testCompileOnly 'org.projectlombok:lombok:1.18.10'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.10'
-
+    testImplementation("org.springframework:spring-test:4.3.14.RELEASE")
     testRuntimeOnly 'com.h2database:h2:2.2.220'
 
 

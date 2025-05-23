@@ -7,6 +7,9 @@
     <persistence-unit name="testPU">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>org.kibo.entity.User</class>
+        <class>org.kibo.entity.UserOrder</class>
+        <class>org.kibo.entity.UserDetail</class>
+        <class>org.kibo.entity.Product</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1"/>

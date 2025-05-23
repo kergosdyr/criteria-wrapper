@@ -176,6 +176,23 @@ public class QueryFactory<T> {
         return this;
     }
 
+    // left join 메서드 추가
+    public QueryFactory<T> leftJoin(Column column, OnConditions onConditions) {
+        Join<Object, Object> join = root.join(column.getFieldName(), JoinType.LEFT);
+        if (onConditions != null && !onConditions.getConditions().isEmpty()) {
+            Predicate[] predicates = getPredicateFromCondition(join, onConditions.getConditions());
+            join.on(predicates);
+        }
+        return this;
+    }
+
+    // on 조건 없이 단순 left join
+    public QueryFactory<T> leftJoin(Column column) {
+        root.join(column.getFieldName(), JoinType.LEFT);
+        return this;
+    }
+
+
     public <K> QueryFactory<T> join(
         Class<K> joinClass,
         OnConditions onConditions
